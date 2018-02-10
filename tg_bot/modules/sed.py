@@ -5,7 +5,8 @@ import telegram
 from telegram import Update, Bot
 from telegram.ext import RegexHandler, run_async
 
-from tg_bot import dispatcher
+from tg_bot import dispatcher, LOGGER
+from tg_bot.modules.disable import DisableAbleRegexHandler
 
 DELIMITERS = ("/", ":", "|", "_")
 
@@ -71,6 +72,8 @@ def sed(bot: Bot, update: Update):
             else:
                 text = re.sub(repl, repl_with, to_fix, count=1).strip()
         except sre_constants.error:
+            LOGGER.warning(update.effective_message.text)
+            LOGGER.exception("SRE constant error")
             update.effective_message.reply_text("Do you even sed? Apparently not.")
             return
 
@@ -92,6 +95,6 @@ larger than {}
 __name__ = "Sed/Regex"
 
 
-SED_HANDLER = RegexHandler(r's([{}]).*?\1.*'.format("".join(DELIMITERS)), sed)
+SED_HANDLER = DisableAbleRegexHandler(r's([{}]).*?\1.*'.format("".join(DELIMITERS)), sed, friendly="sed")
 
 dispatcher.add_handler(SED_HANDLER)
