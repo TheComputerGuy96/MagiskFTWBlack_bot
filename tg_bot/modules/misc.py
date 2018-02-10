@@ -4,14 +4,14 @@ from datetime import datetime
 from typing import Optional, List
 
 import requests
-from telegram import Message, Chat, Update, Bot
+from telegram import Message, Chat, Update, Bot, MessageEntity
 from telegram import ParseMode
 from telegram.ext import CommandHandler, run_async, Filters
 from telegram.utils.helpers import escape_markdown
 
 from tg_bot import dispatcher, OWNER_ID, SUDO_USERS, SUPPORT_USERS, WHITELIST_USERS, BAN_STICKER
 from tg_bot.__main__ import STATS, USER_INFO
-from tg_bot.modules.helper_funcs.cust_filters import CustomFilters
+from tg_bot.modules.helper_funcs.filters import CustomFilters
 from tg_bot.modules.helper_funcs.extraction import extract_user
 
 RUN_STRINGS = (
@@ -208,10 +208,21 @@ def get_id(bot: Bot, update: Update, args: List[str]):
 def info(bot: Bot, update: Update, args: List[str]):
     msg = update.effective_message  # type: Optional[Message]
     user_id = extract_user(update.effective_message, args)
+
     if user_id:
         user = bot.get_chat(user_id)
-    else:
+
+    elif not msg.reply_to_message and not args:
         user = msg.from_user
+
+    elif not msg.reply_to_message and (not args or (
+            len(args) >= 1 and not args[0].startswith("@") and not args[0].isdigit() and not msg.parse_entities(
+            [MessageEntity.TEXT_MENTION]))):
+        msg.reply_text("I can't extract a user from this.")
+        return
+
+    else:
+        return
 
     text = "*User info*:" \
            "\nID: `{}`" \

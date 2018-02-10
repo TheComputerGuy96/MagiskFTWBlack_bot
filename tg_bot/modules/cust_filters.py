@@ -2,7 +2,7 @@ import re
 from typing import Optional
 
 import telegram
-from telegram import ParseMode, InlineKeyboardMarkup, InlineKeyboardButton, Message, Chat
+from telegram import ParseMode, InlineKeyboardMarkup, Message, Chat
 from telegram import Update, Bot
 from telegram.error import BadRequest
 from telegram.ext import CommandHandler, MessageHandler, DispatcherHandlerStop, run_async, Filters
@@ -11,6 +11,7 @@ from telegram.utils.helpers import escape_markdown
 from tg_bot import dispatcher, OWNER_USERNAME
 from tg_bot.modules.helper_funcs.chat_status import user_admin
 from tg_bot.modules.helper_funcs.extraction import extract_text
+from tg_bot.modules.helper_funcs.misc import build_keyboard
 from tg_bot.modules.helper_funcs.string_handling import split_quotes, button_markdown_parser
 from tg_bot.modules.sql import cust_filters_sql as sql
 
@@ -68,6 +69,10 @@ def filters(bot: Bot, update: Update):
     if len(extracted) >= 2:
         offset = len(extracted[1]) - len(msg.text)  # set correct offset relative to command + notename
         content, buttons = button_markdown_parser(extracted[1], entities=msg.parse_entities(), offset=offset)
+        content = content.strip()
+        if not content:
+            msg.reply_text("There is no note message - You can't JUST have buttons, you need a message to go with it!")
+            return
 
     elif msg.reply_to_message and msg.reply_to_message.sticker:
         content = msg.reply_to_message.sticker.file_id
@@ -160,9 +165,9 @@ def reply_filter(bot: Bot, update: Update):
                 message.reply_video(filt.reply)
             elif filt.has_markdown:
                 buttons = sql.get_buttons(chat.id, filt.keyword)
-                keyb = [[InlineKeyboardButton(btn.name, url=btn.url)] for btn in buttons]
-
+                keyb = build_keyboard(buttons)
                 keyboard = InlineKeyboardMarkup(keyb)
+
                 try:
                     message.reply_text(filt.reply, parse_mode=ParseMode.MARKDOWN,
                                        disable_web_page_preview=True,

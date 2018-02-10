@@ -60,6 +60,7 @@ def sed(bot: Bot, update: Update):
             return
 
         repl, repl_with, flags = sed_result
+
         try:
             if 'i' in flags and 'g' in flags:
                 text = re.sub(repl, repl_with, to_fix, flags=re.I).strip()
