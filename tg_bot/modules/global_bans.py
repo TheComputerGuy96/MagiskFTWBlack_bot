@@ -186,9 +186,9 @@ def check_and_ban(update, user_id):
 
 
 @run_async
-@can_restrict
 def enforce_gban(bot: Bot, update: Update):
-    if sql.does_chat_gban(update.effective_chat.id):
+    # Not using @restrict handler to avoid spamming - just ignore if cant gban.
+    if sql.does_chat_gban(update.effective_chat.id) and update.effective_chat.get_member(bot.id).can_restrict_members:
         user = update.effective_user  # type: Optional[User]
         chat = update.effective_chat  # type: Optional[Chat]
         msg = update.effective_message  # type: Optional[Message]
@@ -263,7 +263,7 @@ you and your groups by removing spam flooders as quickly as possible. They can b
 /gbanstat
 """
 
-__name__ = "Global Bans"
+__mod_name__ = "Global Bans"
 
 GBAN_HANDLER = CommandHandler("gban", gban, pass_args=True,
                               filters=CustomFilters.sudo_filter | CustomFilters.support_filter)

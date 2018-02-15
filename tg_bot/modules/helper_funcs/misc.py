@@ -4,6 +4,8 @@ from typing import List, Dict
 from telegram import MAX_MESSAGE_LENGTH, InlineKeyboardButton, Bot, ParseMode
 from telegram.error import TelegramError
 
+from tg_bot import LOAD, NO_LOAD
+
 
 class EqInlineKeyboardButton(InlineKeyboardButton):
     def __eq__(self, other):
@@ -40,13 +42,14 @@ def split_message(msg: str) -> List[str]:
 def paginate_modules(page_n: int, module_dict: Dict, prefix, chat=None) -> List:
     if not chat:
         modules = sorted(
-            [EqInlineKeyboardButton(x.__name__, callback_data="{}_module({})".format(prefix, x.__name__.lower())) for x
+            [EqInlineKeyboardButton(x.__mod_name__,
+                                    callback_data="{}_module({})".format(prefix, x.__mod_name__.lower())) for x
              in module_dict.values()])
     else:
         modules = sorted(
-            [EqInlineKeyboardButton(x.__name__,
-                                    callback_data="{}_module({},{})".format(prefix, chat, x.__name__.lower())) for x in
-             module_dict.values()])
+            [EqInlineKeyboardButton(x.__mod_name__,
+                                    callback_data="{}_module({},{})".format(prefix, chat, x.__mod_name__.lower())) for x
+             in module_dict.values()])
 
     pairs = list(zip(modules[::2], modules[1::2]))
 
@@ -82,3 +85,7 @@ def build_keyboard(buttons):
             keyb.append([InlineKeyboardButton(btn.name, url=btn.url)])
 
     return keyb
+
+
+def is_module_loaded(name):
+    return (not LOAD or name in LOAD) and name not in NO_LOAD
