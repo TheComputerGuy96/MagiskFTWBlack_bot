@@ -2,6 +2,7 @@ from typing import Optional, List
 
 from telegram import Message, Chat, Update, Bot, User
 from telegram import ParseMode, InlineKeyboardMarkup
+from telegram.error import BadRequest
 from telegram.ext import MessageHandler, Filters, CommandHandler, run_async
 from telegram.utils.helpers import escape_markdown
 
@@ -43,6 +44,20 @@ def send(update, message, keyboard, backup_message):
                                                             "invalid due to an issue with some misplaced "
                                                             "curly brackets. Please update"),
                                             parse_mode=ParseMode.MARKDOWN)
+    except BadRequest as excp:
+        if excp.message == "Button_url_invalid":
+            update.effective_message.reply_text(markdown_parser(backup_message +
+                                                                "\nNote: the current message has an invalid url in "
+                                                                "one of its buttons. Please update."),
+                                                parse_mode=ParseMode.MARKDOWN)
+        elif excp.message == "Unsupported url protocol":
+            update.effective_message.reply_text(markdown_parser(backup_message +
+                                                                "\nNote: the current message has buttons which use "
+                                                                "url protocols that are unsupported by telegram. "
+                                                                "Please update."),
+                                                parse_mode=ParseMode.MARKDOWN)
+        else:
+            raise
 
 
 @run_async
@@ -271,8 +286,12 @@ def set_welcome(bot: Bot, update: Update) -> str:
     sql.set_custom_welcome(chat.id, content, data_type, buttons)
     update.effective_message.reply_text("Successfully set custom welcome message!")
 
-    return "[{}](tg://user?id={}) changed the welcome message in {}.".format(escape_markdown(user.first_name), user.id,
-                                                                             escape_markdown(chat.title))
+    return "{}:" \
+           "\n#SET_WELCOME" \
+           "\n*Admin:* [{}](tg://user?id={})" \
+           "\nSet the welcome message.".format(escape_markdown(chat.title),
+                                               escape_markdown(user.first_name),
+                                               user.id)
 
 
 @run_async
@@ -283,9 +302,12 @@ def reset_welcome(bot: Bot, update: Update) -> str:
     user = update.effective_user  # type: Optional[User]
     sql.set_custom_welcome(chat.id, sql.DEFAULT_WELCOME, sql.Types.TEXT)
     update.effective_message.reply_text("Successfully reset welcome message to default!")
-    return "[{}](tg://user?id={}) reset the welcome message in {} to default.".format(escape_markdown(user.first_name),
-                                                                                      user.id,
-                                                                                      escape_markdown(chat.title))
+    return "{}:" \
+           "\n#RESET_WELCOME" \
+           "\n*Admin:* [{}](tg://user?id={})" \
+           "\nReset the welcome message to default.".format(escape_markdown(chat.title),
+                                                            escape_markdown(user.first_name),
+                                                            user.id)
 
 
 @run_async
@@ -338,8 +360,12 @@ def set_goodbye(bot: Bot, update: Update) -> str:
 
     sql.set_custom_gdbye(chat.id, content, data_type, buttons)
     update.effective_message.reply_text("Successfully set custom goodbye message!")
-    return "[{}](tg://user?id={}) changed the goodbye message in {}.".format(escape_markdown(user.first_name), user.id,
-                                                                             escape_markdown(chat.title))
+    return "{}:" \
+           "\n#SET_GOODBYE" \
+           "\n*Admin:* [{}](tg://user?id={})" \
+           "\nSet the goodbye message.".format(escape_markdown(chat.title),
+                                               escape_markdown(user.first_name),
+                                               user.id)
 
 
 @run_async
@@ -350,9 +376,12 @@ def reset_goodbye(bot: Bot, update: Update) -> str:
     user = update.effective_user  # type: Optional[User]
     sql.set_custom_gdbye(chat.id, sql.DEFAULT_GOODBYE, sql.Types.TEXT)
     update.effective_message.reply_text("Successfully reset goodbye message to default!")
-    return "[{}](tg://user?id={}) reset the goodbye message in {} to default.".format(escape_markdown(user.first_name),
-                                                                                      user.id,
-                                                                                      escape_markdown(chat.title))
+    return "{}:" \
+           "\n#RESET_GOODBYE" \
+           "\n*Admin:* [{}](tg://user?id={})" \
+           "\nReset the goodbye message.".format(escape_markdown(chat.title),
+                                                 escape_markdown(user.first_name),
+                                                 user.id)
 
 
 WELC_HELP_TXT = "Your group's welcome/goodbye messages can be personalised in multiple ways. If you want the messages" \
