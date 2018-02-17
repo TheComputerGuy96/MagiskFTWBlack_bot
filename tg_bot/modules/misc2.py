@@ -60,7 +60,7 @@ __help__ = """
 __mod_name__ = "Misc 2"
 
 BIRTHDAY_HANDLER = DisableAbleCommandHandler("birthday", birthday, pass_args=True)
-NOU_HAMDLER = DisableAbleCommandHandler("nou", nou)
+NOU_HANDLER = DisableAbleCommandHandler("nou", nou)
 
 dispatcher.add_handler(BIRTHDAY_HANDLER)
 dispatcher.add_handler(NOU_HANDLER)
