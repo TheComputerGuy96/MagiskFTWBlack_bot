@@ -80,13 +80,13 @@ def set_flood(bot: Bot, update: Update, args: List[str]) -> str:
                                                       escape_markdown(user.first_name),
                                                       user.id)
 
-            elif amount < 3:
-                message.reply_text("Antiflood has to be either 0 (disabled), or a number bigger than 3!")
-                return ""
-
             else:
                 sql.set_flood(chat.id, amount)
-                message.reply_text("Antiflood has been updated and set to {}".format(amount))
+                if amount < 3:
+                    message.reply_text("Antiflood has been updated and set to {} 😂".format(amount))
+                else:
+                    message.reply_text("Antiflood has been updated and set to {}".format(amount))
+
                 return "{}:" \
                        "\n#SETFLOOD" \
                        "\n*Admin:* [{}](tg://user?id={})" \
