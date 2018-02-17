@@ -33,7 +33,7 @@ def birthday(bot: Bot, update: Update, args: List[str]):
       return ""
 
     count = random.randint(1, 10)
-    repl = temp.format("Happy birthday, {}!\n".format(target_user) * count)
+    repl = format("Happy birthday, {}!\n".format(target_user) * count)
 
     reply_text(repl, parse_mode=ParseMode.MARKDOWN)
 
@@ -47,14 +47,14 @@ def nou(bot: Bot, update: Update):
 
     no_count = random.randint(1, 50)
     no_text = "No" * no_count
-    repl = temp.format("{}U".format(no_text))
+    repl = format("{}U".format(no_text))
 
     reply_text(repl)
 
 
 __help__ = """
  - /birthday: wish an user a happy birthday 1-10 times 😂.
- - /nou: (No * [1-50])U
+ - /nou: (No * 1-50)U
 """
 
 __mod_name__ = "Misc 2"
